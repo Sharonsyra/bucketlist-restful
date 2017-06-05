@@ -45,7 +45,24 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('Go bungee', str(response.data))
 
-    def test_api_can_get_all_bucketlists(self):
+    def test_bucketlist_creation_duplicates(self):
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        response = self.client().post(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.bucketlist)
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('Go bungee', str(response.data))
+        response = self.client().post(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.bucketlist)
+        self.assertEqual(response.status_code, 409)
+
+    def test_bucketlist_view_all(self):
         """Test that all bucketlists are viewed"""
         self.register_user()
         result = self.login_user()
@@ -63,7 +80,7 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Go bungee', str(response.data))
 
-    def test_api_can_get_bucketlist_by_id(self):
+    def test_bucketlist_view_one(self):
         """Test one bucketlist can be viewed"""
         self.register_user()
         result = self.login_user()
@@ -81,7 +98,7 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         self.assertIn('Go bungee', str(result.data))
 
-    def test_bucketlist_can_be_edited(self):
+    def test_bucketlist_edit(self):
         """Test that a bucketlist can be edited"""
         self.register_user()
         result = self.login_user()
@@ -127,7 +144,22 @@ class BucketlistTestCase(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 404)
 
-    def function():
+    def test_bucketlist_item_creation(self):
+        pass
+
+    def test_bucketlist_item_creation_duplicates(self):
+        pass
+
+    def test_bucketlist_view_items(self):
+        pass
+
+    def test_bucketlist_view_item(self):
+        pass
+
+    def test_bucketlist_item_edit(self):
+        pass
+
+    def test_bucketlist_item_deletion(self):
         pass
 
 if __name__ == "__main__":
