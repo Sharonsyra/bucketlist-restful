@@ -39,12 +39,14 @@ def create_app(config_name):
                             response = jsonify({
                                 'id': bucketlist.id,
                                 'name': bucketlist.name,
+                                'items':bucketlist.items,
                                 'date_created': bucketlist.date_created,
                                 'date_modified': bucketlist.date_modified,
                                 'created_by': user_id
                             })
 
                             return make_response(response), 201
+
                     else:
                         response = {
                         'message': 'Bucketlist name already exists!'
@@ -59,6 +61,7 @@ def create_app(config_name):
                         obj = {
                             'id': bucketlist.id,
                             'name': bucketlist.name,
+                            'items':bucketlist.items,
                             'date_created': bucketlist.date_created,
                             'date_modified': bucketlist.date_modified,
                             'created_by': bucketlist.created_by
@@ -72,7 +75,6 @@ def create_app(config_name):
                     "message":message
                     }
                     return make_response(jsonify(response)), 400
-
         else:
             message = user_id
             response = {
@@ -96,6 +98,7 @@ def create_app(config_name):
                     response = jsonify({
                         'id': bucketlist.id,
                         'name': bucketlist.name,
+                        'items':bucketlist.items,
                         'date_created': bucketlist.date_created,
                         'date_modified': bucketlist.date_modified,
                         'created_by': bucketlist.created_by
@@ -108,6 +111,7 @@ def create_app(config_name):
                     response = {
                         'id': bucketlist.id,
                         'name': bucketlist.name,
+                        'items':bucketlist.items,
                         'date_created': bucketlist.date_created,
                         'date_modified': bucketlist.date_modified,
                         'created_by': bucketlist.created_by
@@ -168,19 +172,20 @@ def create_app(config_name):
                     elif request.method == "GET":
                         items = Item.get_all(id)
                         results = []
-
-                        for item in items:
-                            obj = {
-                                'id':item.id,
-                                'name':item.name,
-                                'done':item.done,
-                                'date_created':item.date_created,
-                                'date_modified':item.date_modified,
-                                'bucketlist_id':id
-                            }
-                            results.append(obj)
-                        return make_response(jsonify(results)), 200
-
+                        if items:
+                            for item in items:
+                                obj = {
+                                    'id':item.id,
+                                    'name':item.name,
+                                    'done':item.done,
+                                    'date_created':item.date_created,
+                                    'date_modified':item.date_modified,
+                                    'bucketlist_id':id
+                                }
+                                results.append(obj)
+                            return make_response(jsonify(results)), 200
+                        else:
+                            abort(404)
                     else:
                         message = user_id
                         response = {
