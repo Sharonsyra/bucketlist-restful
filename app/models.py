@@ -111,7 +111,7 @@ class Item(db.Model):
     date_modified = db.Column(
         db.DateTime, default=db.func.current_timestamp(),
         onupdate=db.func.current_timestamp())
-    list_id = db.Column(db.Integer, db.ForeignKey(Bucketlist.id))
+    bucketlist_id = db.Column(db.Integer, db.ForeignKey(Bucketlist.id))
 
     def __init__(self, name, bucketlist_id):
         """Item with name and bucket list."""
