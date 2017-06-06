@@ -47,6 +47,7 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertIn('Go bungee', str(response.data))
 
     def test_bucketlist_creation_duplicates(self):
+        """Test user cannot create duplicate bucketlists"""
         self.register_user()
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
@@ -262,6 +263,7 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertIn('Buy gym', str(item_response.data))
 
     def test_bucketlist_item_edit(self):
+        """Test that a bucketlist item can be edited"""
         self.register_user()
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
@@ -301,6 +303,7 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertIn('travel bag', str(results.data))
 
     def test_bucketlist_item_deletion(self):
+        """Test that bucketlist item can be deleted"""
         self.register_user()
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
@@ -330,7 +333,25 @@ class BucketlistTestCase(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 404)
 
-    
+    def test_pagination():
+        pass
+
+    def test_search():
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        response = self.client().post(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.bucketlist)
+        self.assertEqual(response.status_code, 201)
+        response = self.client().get(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + access_token),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Go bungee', str(response.data))
 
 if __name__ == "__main__":
     unittest.main()
