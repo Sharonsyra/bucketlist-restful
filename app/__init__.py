@@ -12,7 +12,7 @@ db = SQLAlchemy()
 
 def create_app(config_name):
 
-    from app.models import Bucketlist, User
+    from app.models import User, Bucketlist, Item
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     bcrypt = Bcrypt(app)
@@ -142,14 +142,14 @@ def create_app(config_name):
         if access_token:
             user_id = User.decode_token(access_token)
             if not isinstance(user_id, str):
-                bucketlist = Bucketlist.query.filter_by(name=request.data['name']).first()
+                bucketlist = Bucketlist.query.filter_by(id=id).first()
                 if bucketlist:
                     if request.method == "POST":
                         item = Item.query.filter_by(name=request.data['name']).first()
                         if not item:
                             name = str(request.data.get('name', ''))
                             if name:
-                                item = Item(name=name, list_id=bucketlist_id)
+                                item = Item(name=name, bucketlist_id=id)
                                 item.save()
                                 response = jsonify({
                                     'id':item.id,
@@ -157,7 +157,7 @@ def create_app(config_name):
                                     'done':item.done,
                                     'date_created':item.date_created,
                                     'date_modified':item.date_modified,
-                                    'list_id':bucketlist_id
+                                    'bucketlist_id':id
                                 })
                                 return make_response(response), 201
                         else:
@@ -166,7 +166,7 @@ def create_app(config_name):
                              }
                             return make_response(jsonify(response)), 409
                     elif request.method == "GET":
-                        items = Item.get_all(bucketlist_id)
+                        items = Item.get_all(id)
                         results = []
 
                         for item in items:
@@ -176,7 +176,7 @@ def create_app(config_name):
                                 'done':item.done,
                                 'date_created':item.date_created,
                                 'date_modified':item.date_modified,
-                                'list_id':item.list_id
+                                'bucketlist_id':id
                             }
                             results.append(obj)
                         return make_response(jsonify(results)), 200
@@ -200,38 +200,48 @@ def create_app(config_name):
             }
             return make_response(jsonify(response)), 401
 
-    @app.route('/api/v1.0/bucketlists/<int:id>/items/<int:id>', methods=['GET','PUT', 'DELETE'])
-    def items_manipulation():
+    @app.route('/api/v1.0/bucketlists/<int:id>/items/<int:item_id>', methods=['GET','PUT', 'DELETE'])
+    def items_manipulation(id, **kwargs):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
 
         if access_token:
             user_id = User.decode_token(access_token)
             if not isinstance(user_id, str):
-                bucketlist = Bucketlist.query.filter_by(name=request.data['name']).first()
+                bucketlist = Bucketlist.query.filter_by(id=id).first()
                 if bucketlist:
-                    item = Item.query.filter_by(name=request.data['name']).first()
+                    item = Item.query.filter_by(id=id).first()
                     if item:
                         if request.method == "GET":
-                            pass
+                            response = jsonify({
+                            'item_id': item.id,
+                            'name': item.name,
+                            'done': item.done,
+                            'date_created': item.date_created,
+                            'date_modified': item.date_modified,
+                            'bucketlist_id':id
+                            })
+                            return make_response(response), 200
+
                         elif request.method == "PUT":
                             name = str(request.data.get('name', ''))
-                            done = # request done
+                            done = bool(request.data.get('done',))
                             item.name = name
                             item.save()
                             response = {
-                                'id': item.id,
+                                'item_id': item.id,
                                 'name': item.name,
-                                'done':item.done
+                                'done':item.done,
                                 'date_created': item.date_created,
                                 'date_modified': item.date_modified,
-                                'created_by': item.created_by
+                                'bucketlist_id':id
                             }
                             return make_response(jsonify(response)), 200
+
                         elif request.method == "DELETE":
                             item.delete()
                             return {
-                            "message": "Item {} deleted".format(bucketlist.id)
+                            "message": "Item {} deleted".format(item.id)
                             }, 200
                         else:
                             message = user_id
@@ -243,7 +253,7 @@ def create_app(config_name):
                         response = {
                         'message': 'The item does not exist!'
                          }
-                    return make_response(jsonify(response)), 404                     
+                        return make_response(jsonify(response)), 404                     
                 elif not bucketlist:
                     response = {
                         'message': 'The bucketlist does not exist!'
