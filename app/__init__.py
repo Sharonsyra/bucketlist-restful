@@ -72,12 +72,13 @@ def create_app(config_name):
                     "message":message
                     }
                     return make_response(jsonify(response)), 400
-            else:
-                message = user_id
-                response = {
-                    'message': message
-                }
-                return make_response(jsonify(response)), 401
+
+        else:
+            message = user_id
+            response = {
+                'message': message
+            }
+            return make_response(jsonify(response)), 401
 
     @app.route('/api/v1.0/bucketlists/<int:id>', methods=['GET', 'PUT', 'DELETE'])
     def bucketlist_manipulation(id, **kwargs):
@@ -96,7 +97,7 @@ def create_app(config_name):
                     bucketlist.delete()
                     return {
                         "message": "bucketlist {} deleted".format(bucketlist.id)
-                    }, 409
+                    }, 200
                 elif request.method == 'PUT':
                     name = str(request.data.get('name', ''))
                     bucketlist.name = name
@@ -128,45 +129,71 @@ def create_app(config_name):
     @app.route('/api/v1.0/bucketlists/<int:id>/items/', methods=['POST','GET'])
     def items(id, **kwargs):
         pass
-        # auth_header = request.headers.get('Authorization')
-        # access_token = auth_header.split(" ")[1]
+        auth_header = request.headers.get('Authorization')
+        access_token = auth_header.split(" ")[1]
 
-        # if access_token:
-        #     user_id = User.decode_token(access_token)
-        #     if not isinstance(bucketlist_id, str):
-        #         bucketlist = Bucketlist.query.filter_by(id=id).first()
-        #         if not bucketlist:
-        #             abort(404)
+        if access_token:
+            user_id = User.decode_token(access_token)
+            if not isinstance(user_id, str):
+                bucketlist = Bucketlist.query.filter_by(name=request.data['name']).first()
+                if bucketlist:
+                    if request.method == "POST":
+                        item = Item.query.filter_by(name=request.data['name']).first()
+                        if not item:
+                            name = str(request.data.get('name', ''))
+                            if name:
+                                item = Item(name=name, list_id=bucketlist_id)
+                                item.save()
+                                response = jsonify({
+                                    'id':item.id,
+                                    'name':item.name,
+                                    'done':item.done,
+                                    'date_created':item.date_created,
+                                    'date_modified':item.date_modified,
+                                    'list_id':bucketlist_id
+                                })
+                                return make_response(response), 201
+                        else:
+                            response = {
+                            'message': 'Item name already exists!'
+                             }
+                            return make_response(jsonify(response)), 409
+                    elif request.method == "GET":
+                        items = Item.get_all(bucketlist_id)
+                        results = []
 
-        #         if request.method == "POST":
-        #             name = str(request.data.get('name', ''))
-        #             if name:
-        #                 bucketlist = Bucketlist(name=name, created_by=user_id, )
-        #                 bucketlist.save()
-        #                 response = jsonify({
-        #                     'id': bucketlist.id,
-        #                     'name': bucketlist.name,
-        #                     'date_created': bucketlist.date_created,
-        #                     'date_modified': bucketlist.date_modified,
-        #                     'created_by': user_id
-        #                 })
+                        for item in items:
+                            obj = {
+                                'id':item.id,
+                                'name':item.name,
+                                'done':item.done,
+                                'date_created':item.date_created,
+                                'date_modified':item.date_modified,
+                                'list_id':item.list_id
+                            }
+                            results.append(obj)
+                        return make_response(jsonify(results)), 200
 
-        #                 return make_response(response), 201
-        #         elif request.method == 'GET':
-        #             name = str(request.data.get('name', ''))
-        #             bucketlist.name = name
-        #             bucketlist.save()
-        #             response = {
-        #                 'id': bucketlist.id,
-        #                 'name': bucketlist.name,
-        #                 'date_created': bucketlist.date_created,
-        #                 'date_modified': bucketlist.date_modified,
-        #                 'created_by': bucketlist.created_by
-        #             }
-        #             return make_response(jsonify(response)), 200
-                
-        # else:
-        #             pass
+                    else:
+                        message = user_id
+                        response = {
+                        "message":message
+                        }
+                        return make_response(jsonify(response)), 400
+
+                elif not bucketlist:
+                    response = {
+                        'message': 'The bucketlist does not exist!'
+                         }
+                    return make_response(jsonify(response)), 404
+        else:
+            message = user_id
+            response = {
+                'message': message
+            }
+            return make_response(jsonify(response)), 401
+
+
     @app.route('/api/v1.0/bucketlists/<int:id>/items/', methods=['PUT','DELETE'])
     def items_manipulation():
         pass
