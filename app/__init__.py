@@ -35,7 +35,7 @@ def create_app(config_name):
 
         if access_token:
             user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
+            if not isinstance(user_id):
                 if request.method == "POST":
                     bucketlist = Bucketlist.query.filter_by(name=request.data['name']).first()
                     if not bucketlist:
