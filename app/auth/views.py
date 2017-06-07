@@ -2,7 +2,7 @@ import re
 from . import auth_blueprint
 
 from flask.views import MethodView
-from flask import Blueprint, make_response, request, jsonify
+from flask import make_response, request, jsonify
 from app.models import User
 
 
@@ -13,10 +13,8 @@ class RegistrationView(MethodView):
 
         post_data = request.data
 
-        match=re.search(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9]+\.[a-zA-Z0-9.]*\.*[com|org|edu]{3}$)", post_data['email'])
-        # password_small=re.search(r"([a-z]$)", post_data['password'])
-        # password_capital=re.search(r"([A-Z]$)", post_data['password'])
-        # password_numbers=re.search(r"([0-9]$)", post_data['password'])
+        match=re.search(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9]+\.[a-zA-Z0-9.]*\.*[com|org|edu]{3}$)", 
+                        post_data['email'])
 
         if post_data['email'] == "":
             response = jsonify({
@@ -32,34 +30,10 @@ class RegistrationView(MethodView):
 
         if len(post_data['password']) < 6:
             response = {
-                "message": "The length of the password should be at least six characters"
+                "message":
+                "The length of the password should be at least six characters"
             }
             return make_response(jsonify(response)), 411
-
-        # if re.search('[0-9]',post_data['password']) is None:
-        #     response = {
-        #         "message": "Password must contain numbers"
-        #         }
-        #     return make_response(jsonify(response)), 400            
-
-
-        # if not password_small:
-        #     response = {
-        #         "message": "Password must contain small letters"
-        #         }
-        #     return make_response(jsonify(response)), 400
-
-        # if not password_capital:
-        #     response = {
-        #         "message": "Password must contain capital letters"
-        #         }
-        #     return make_response(jsonify(response)), 400
-
-        # if not password_numbers:
-        #     response = {
-        #         "message": "Password must contain numbers"
-        #         }
-        #     return make_response(jsonify(response)), 400
 
         if not user:
             try:
