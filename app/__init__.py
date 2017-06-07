@@ -26,6 +26,13 @@ def create_app(config_name):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
 
+        if not auth_header:
+            response = {
+                "message": "Unauthorised Access"
+            }
+            return make_response(jsonify(response)), 401
+
+
         if access_token:
             user_id = User.decode_token(access_token)
             if not isinstance(user_id, str):
@@ -46,6 +53,11 @@ def create_app(config_name):
                             })
 
                             return make_response(response), 201
+                        else:
+                            response = {
+                                "message": "Please input name!"
+                            }
+                            return make_response(jsonify(response))
 
                     else:
                         response = {
@@ -54,21 +66,69 @@ def create_app(config_name):
                         return make_response(jsonify(response)), 409
 
                 elif request.method == "GET":
-                    bucketlists = Bucketlist.get_all(user_id)
-                    results = []
+                    search = request.args.get("q","")
+                    if not search:
+                        if request.args.get("page"):
+                            page = int(request.args.get("page"))
+                        else:
+                            page = 1
+                        if request.args.get("limit") and int(request.args.get("limit")) < 100:
+                            limit = int(request.args.get("limit"))
+                        else:
+                            limit = 2
+                        paginated_buckets = Bucketlist.query.filter_by(
+                            created_by=user_id).paginate(page, limit, False)
+                        bucketlists = paginated_buckets.items
+                        if paginated_buckets.has_next:
+                            nextpage = '/bucketlist/api/v1.0/bucketlists/?page=' + \
+                                str(page + 1) + '&limit=' + str(limit)
+                        else:
+                            nextpage = "Nothing To See Here"
+                        if paginated_buckets.has_prev:
+                            previouspage = '/bucketlist/api/v1.0/bucketlists/?page=' + \
+                                str(page - 1) + '&limit=' + str(limit)
+                        else:
+                            previouspage = "Nothing To See Here"
+                        results = []
+                        # search all bucketlists
+                        for bucketlist in bucketlists:
+                            obj = {
+                                'id': bucketlist.id,
+                                'name': bucketlist.name,
+                                'items':bucketlist.items,
+                                'date_created': bucketlist.date_created,
+                                'date_modified': bucketlist.date_modified,
+                                'created_by': bucketlist.created_by
+                            }
+                            results.append(obj)
+                            response = {
+                            "next page": nextpage,
+                            "previous page": previouspage,
+                            "bucketlists": results
+                            }
+                            return make_response(jsonify(response)), 200
 
-                    for bucketlist in bucketlists:
-                        obj = {
+                    if search:
+                        search_name = Bucketlist.query.filter_by(Bucketlist.name.ilike(search)).all
+                        if not search_name:
+                            response = {
+                            "message": "Bucketlist does not exist!"
+                            }
+                            return make_response(jsonify(response)), 404
+                        else:
+                            bucketlist = Bucketlist.query.filter_by(name=search_name).first()
+                            response = jsonify({
                             'id': bucketlist.id,
                             'name': bucketlist.name,
                             'items':bucketlist.items,
                             'date_created': bucketlist.date_created,
                             'date_modified': bucketlist.date_modified,
                             'created_by': bucketlist.created_by
-                        }
-                        results.append(obj)
+                            })
+                            return make_response(response), 200
 
-                    return make_response(jsonify(results)), 200
+                    # bucketlists = Bucketlist.get_all(user_id)
+
                 else:
                     message = user_id
                     response = {
@@ -87,6 +147,12 @@ def create_app(config_name):
 
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
+
+        if not auth_header:
+            response = {
+                "message": "Unauthorised Access"
+            }
+            return make_response(jsonify(response)), 401
 
         if access_token:
             user_id = User.decode_token(access_token)
@@ -139,9 +205,14 @@ def create_app(config_name):
 
     @app.route('/api/v1.0/bucketlists/<int:id>/items/', methods=['POST','GET'])
     def items(id, **kwargs):
-        pass
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
+
+        if not auth_header:
+            response = {
+                "message": "Unauthorised Access"
+            }
+            return make_response(jsonify(response)), 401
 
         if access_token:
             user_id = User.decode_token(access_token)
@@ -164,6 +235,11 @@ def create_app(config_name):
                                     'bucketlist_id':id
                                 })
                                 return make_response(response), 201
+                            else:
+                                response = {
+                                "message": "Please input name!"
+                                 }
+                                return make_response(jsonify(response))
                         else:
                             response = {
                             'message': 'Item name already exists!'
@@ -209,6 +285,12 @@ def create_app(config_name):
     def items_manipulation(id, **kwargs):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
+
+        if not auth_header:
+            response = {
+                "message": "Unauthorised Access"
+            }
+            return make_response(jsonify(response)), 401
 
         if access_token:
             user_id = User.decode_token(access_token)
