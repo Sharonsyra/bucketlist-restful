@@ -1,21 +1,17 @@
-import json
-from flask_api import FlaskAPI, status
+from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
-
 from flask import request, jsonify, abort, make_response
 
 from config import app_config
 
-from flask_bcrypt import Bcrypt
-
 db = SQLAlchemy()
+
 
 def create_app(config_name):
 
     from app.models import User, Bucketlist, Item
 
     app = FlaskAPI(__name__, instance_relative_config=True)
-    bcrypt = Bcrypt(app)
 
     app.config.from_object(app_config[config_name])
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -32,21 +28,27 @@ def create_app(config_name):
             }
             return make_response(jsonify(response)), 401
 
-
         if access_token:
             user_id = User.decode_token(access_token)
-            if not isinstance(user_id):
+            if isinstance(user_id, int):
                 if request.method == "POST":
-                    bucketlist = Bucketlist.query.filter_by(name=request.data['name']).first()
+                    if not ('name' in request.data):
+                        response = {
+                            "message": "Name missing!"
+                        }
+                        return make_response(jsonify(response))
+                    bucketlist = Bucketlist.query.filter_by(
+                        name=request.data['name']).first()
                     if not bucketlist:
                         name = str(request.data.get('name', ''))
                         if name:
-                            bucketlist = Bucketlist(name=name, created_by=user_id)
+                            bucketlist = Bucketlist(name=name,
+                                                    created_by=user_id)
                             bucketlist.save()
                             response = jsonify({
                                 'id': bucketlist.id,
                                 'name': bucketlist.name,
-                                'items':bucketlist.items,
+                                'items': bucketlist.items,
                                 'date_created': bucketlist.date_created,
                                 'date_modified': bucketlist.date_modified,
                                 'created_by': user_id
@@ -57,22 +59,22 @@ def create_app(config_name):
                             response = {
                                 "message": "Please input name!"
                             }
-                            return make_response(jsonify(response))
-
+                            return make_response(jsonify(response)), 400
                     else:
                         response = {
-                        'message': 'Bucketlist name already exists!'
-                         }
+                            'message': 'Bucketlist name already exists!'
+                        }
                         return make_response(jsonify(response)), 409
-
                 elif request.method == "GET":
-                    search = request.args.get("q","")
+                    search = request.args.get("q", "")
                     if not search:
                         if request.args.get("page"):
                             page = int(request.args.get("page"))
                         else:
                             page = 1
-                        if request.args.get("limit") and int(request.args.get("limit")) < 100:
+                        if request.args.get("limit") and int(request.args.
+                                                             get("limit")) < \
+                                100:
                             limit = int(request.args.get("limit"))
                         else:
                             limit = 2
@@ -92,47 +94,77 @@ def create_app(config_name):
                         results = []
                         # search all bucketlists
                         for bucketlist in bucketlists:
+                            items = Item.query.filter_by(
+                                bucketlist_id=bucketlist.id)
+                            item_results = []
+                            for item in items:
+                                item_obj = {
+                                    'id': item.id,
+                                    'name': item.name,
+                                    'done': item.done,
+                                    'date_created': item.date_created,
+                                    'date_modified': item.date_modified,
+                                    'bucketlist_id': bucketlist.id
+                                }
+                                item_results.append(item_obj)
                             obj = {
                                 'id': bucketlist.id,
                                 'name': bucketlist.name,
-                                'items':bucketlist.items,
+                                'items': item_results,
                                 'date_created': bucketlist.date_created,
                                 'date_modified': bucketlist.date_modified,
                                 'created_by': bucketlist.created_by
                             }
                             results.append(obj)
-                            response = {
+                        response = {
                             "next page": nextpage,
                             "previous page": previouspage,
                             "bucketlists": results
-                            }
-                            return make_response(jsonify(response)), 200
+                        }
+                        return make_response(jsonify(response)), 200
 
                     if search:
-                        search_name = Bucketlist.query.filter_by(Bucketlist.name.ilike(search)).all
+                        search_name = (Bucketlist.query.filter(
+                            Bucketlist.name.contains(search.lower())).all())
                         if not search_name:
                             response = {
-                            "message": "Bucketlist does not exist!"
+                                "message": "Bucketlist does not exist!"
                             }
                             return make_response(jsonify(response)), 404
-                        else:
-                            bucketlist = Bucketlist.query.filter_by(name=search_name).first()
-                            response = jsonify({
-                            'id': bucketlist.id,
-                            'name': bucketlist.name,
-                            'items':bucketlist.items,
-                            'date_created': bucketlist.date_created,
-                            'date_modified': bucketlist.date_modified,
-                            'created_by': bucketlist.created_by
-                            })
-                            return make_response(response), 200
+                        results = []
+                        for bucketlist_object in search_name:
+                            items = Item.query.filter_by(
+                                bucketlist_id=bucketlist_object.id)
+                            item_results = []
+                            for item in items:
+                                item_obj = {
+                                    'id': item.id,
+                                    'name': item.name,
+                                    'done': item.done,
+                                    'date_created': item.date_created,
+                                    'date_modified': item.date_modified,
+                                    'bucketlist_id': bucketlist_object.id
+                                }
+                                item_results.append(item_obj)
+                            obj = {
+                                'id': bucketlist_object.id,
+                                'name': bucketlist_object.name,
+                                'items': item_results,
+                                'date_created': bucketlist_object.date_created,
+                                'date_modified': bucketlist_object
+                                .date_modified,
+                                'created_by': bucketlist_object.created_by
+                            }
+                            results.append(obj)
 
-                    # bucketlists = Bucketlist.get_all(user_id)
-
+                        response = {
+                            "bucketlists": results
+                        }
+                        return make_response(jsonify(response)), 200
                 else:
                     message = user_id
                     response = {
-                    "message":message
+                        "message": message
                     }
                     return make_response(jsonify(response)), 400
         else:
@@ -156,15 +188,27 @@ def create_app(config_name):
 
         if access_token:
             user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
+            if isinstance(user_id, int):
                 bucketlist = Bucketlist.query.filter_by(id=id).first()
                 if not bucketlist:
                     abort(404)
                 elif request.method == "GET":
+                    items = Item.query.filter_by(bucketlist_id=bucketlist.id)
+                    item_results = []
+                    for item in items:
+                        item_obj = {
+                            'id': item.id,
+                            'name': item.name,
+                            'done': item.done,
+                            'date_created': item.date_created,
+                            'date_modified': item.date_modified,
+                            'bucketlist_id': bucketlist.id
+                        }
+                        item_results.append(item_obj)
                     response = jsonify({
                         'id': bucketlist.id,
                         'name': bucketlist.name,
-                        'items':bucketlist.items,
+                        'items': item_results,
                         'date_created': bucketlist.date_created,
                         'date_modified': bucketlist.date_modified,
                         'created_by': bucketlist.created_by
@@ -174,25 +218,38 @@ def create_app(config_name):
                     name = str(request.data.get('name', ''))
                     bucketlist.name = name
                     bucketlist.save()
+                    items = Item.query.filter_by(bucketlist_id=bucketlist.id)
+                    item_results = []
+                    for item in items:
+                        item_obj = {
+                            'id': item.id,
+                            'name': item.name,
+                            'done': item.done,
+                            'date_created': item.date_created,
+                            'date_modified': item.date_modified,
+                            'bucketlist_id': bucketlist.id
+                        }
+                        item_results.append(item_obj)
                     response = {
                         'id': bucketlist.id,
                         'name': bucketlist.name,
-                        'items':bucketlist.items,
+                        'items': item_results,
                         'date_created': bucketlist.date_created,
                         'date_modified': bucketlist.date_modified,
                         'created_by': bucketlist.created_by
                     }
-                    return make_response(jsonify(response)), 200
+                    return make_response(jsonify(response)), 201
                 elif request.method == "DELETE":
                     bucketlist.delete()
                     return {
-                        "message": "bucketlist {} deleted".format(bucketlist.id)
+                        "message": "bucketlist {} deleted"
+                        .format(bucketlist.id)
                     }, 200
-                
+
                 else:
                     message = user_id
                     response = {
-                    "message":message
+                        "message": message
                     }
                     return make_response(jsonify(response)), 400
 
@@ -203,7 +260,7 @@ def create_app(config_name):
                 }
                 return make_response(jsonify(response)), 401
 
-    @app.route('/api/v1.0/bucketlists/<int:id>/items/', methods=['POST','GET'])
+    @app.route('/api/v1.0/bucketlists/<int:id>/items/', methods=['POST', 'GET'])
     def items(id, **kwargs):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
@@ -216,34 +273,35 @@ def create_app(config_name):
 
         if access_token:
             user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
+            if isinstance(user_id, int):
                 bucketlist = Bucketlist.query.filter_by(id=id).first()
                 if bucketlist:
                     if request.method == "POST":
-                        item = Item.query.filter_by(name=request.data['name']).first()
+                        item = Item.query.filter_by(
+                            name=request.data['name']).first()
                         if not item:
                             name = str(request.data.get('name', ''))
                             if name:
                                 item = Item(name=name, bucketlist_id=id)
                                 item.save()
                                 response = jsonify({
-                                    'id':item.id,
-                                    'name':item.name,
-                                    'done':item.done,
-                                    'date_created':item.date_created,
-                                    'date_modified':item.date_modified,
-                                    'bucketlist_id':id
+                                    'id': item.id,
+                                    'name': item.name,
+                                    'done': item.done,
+                                    'date_created': item.date_created,
+                                    'date_modified': item.date_modified,
+                                    'bucketlist_id': id
                                 })
                                 return make_response(response), 201
                             else:
                                 response = {
-                                "message": "Please input name!"
-                                 }
+                                    "message": "Please input name!"
+                                }
                                 return make_response(jsonify(response))
                         else:
                             response = {
-                            'message': 'Item name already exists!'
-                             }
+                                'message': 'Item name already exists!'
+                            }
                             return make_response(jsonify(response)), 409
                     elif request.method == "GET":
                         items = Item.get_all(id)
@@ -251,12 +309,12 @@ def create_app(config_name):
                         if items:
                             for item in items:
                                 obj = {
-                                    'id':item.id,
-                                    'name':item.name,
-                                    'done':item.done,
-                                    'date_created':item.date_created,
-                                    'date_modified':item.date_modified,
-                                    'bucketlist_id':id
+                                    'id': item.id,
+                                    'name': item.name,
+                                    'done': item.done,
+                                    'date_created': item.date_created,
+                                    'date_modified': item.date_modified,
+                                    'bucketlist_id': id
                                 }
                                 results.append(obj)
                             return make_response(jsonify(results)), 200
@@ -265,14 +323,14 @@ def create_app(config_name):
                     else:
                         message = user_id
                         response = {
-                        "message":message
+                            "message": message
                         }
                         return make_response(jsonify(response)), 400
 
                 elif not bucketlist:
                     response = {
                         'message': 'The bucketlist does not exist!'
-                         }
+                    }
                     return make_response(jsonify(response)), 404
         else:
             message = user_id
@@ -281,8 +339,8 @@ def create_app(config_name):
             }
             return make_response(jsonify(response)), 401
 
-    @app.route('/api/v1.0/bucketlists/<int:id>/items/<int:item_id>', methods=['GET','PUT', 'DELETE'])
-    def items_manipulation(id, **kwargs):
+    @app.route('/api/v1.0/bucketlists/<int:id>/items/<int:item_id>', methods=['GET', 'PUT', 'DELETE'])
+    def items_manipulation(id, item_id):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
 
@@ -294,57 +352,56 @@ def create_app(config_name):
 
         if access_token:
             user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
+            if isinstance(user_id, int):
                 bucketlist = Bucketlist.query.filter_by(id=id).first()
                 if bucketlist:
-                    item = Item.query.filter_by(id=id).first()
+                    item = Item.query.filter_by(id=item_id).first()
                     if item:
                         if request.method == "GET":
                             response = jsonify({
-                            'item_id': item.id,
-                            'name': item.name,
-                            'done': item.done,
-                            'date_created': item.date_created,
-                            'date_modified': item.date_modified,
-                            'bucketlist_id':id
+                                'item_id': item.id,
+                                'name': item.name,
+                                'done': item.done,
+                                'date_created': item.date_created,
+                                'date_modified': item.date_modified,
+                                'bucketlist_id': id
                             })
                             return make_response(response), 200
 
                         elif request.method == "PUT":
                             name = str(request.data.get('name', ''))
-                            done = bool(request.data.get('done',))
                             item.name = name
                             item.save()
                             response = {
                                 'item_id': item.id,
                                 'name': item.name,
-                                'done':item.done,
+                                'done': item.done,
                                 'date_created': item.date_created,
                                 'date_modified': item.date_modified,
-                                'bucketlist_id':id
+                                'bucketlist_id': id
                             }
                             return make_response(jsonify(response)), 200
 
                         elif request.method == "DELETE":
                             item.delete()
                             return {
-                            "message": "Item {} deleted".format(item.id)
+                                "message": "Item {} deleted".format(item.id)
                             }, 200
                         else:
                             message = user_id
                             response = {
-                            "message":message
+                                "message": message
                             }
                             return make_response(jsonify(response)), 400
                     else:
                         response = {
-                        'message': 'The item does not exist!'
-                         }
-                        return make_response(jsonify(response)), 404                     
+                            'message': 'The item does not exist!'
+                        }
+                        return make_response(jsonify(response)), 404
                 elif not bucketlist:
                     response = {
                         'message': 'The bucketlist does not exist!'
-                         }
+                    }
                     return make_response(jsonify(response)), 404
         else:
             message = user_id
@@ -352,7 +409,6 @@ def create_app(config_name):
                 'message': message
             }
             return make_response(jsonify(response)), 401
-
 
     from .auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
