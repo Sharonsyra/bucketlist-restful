@@ -168,9 +168,8 @@ def create_app(config_name):
                     }
                     return make_response(jsonify(response)), 400
         else:
-            message = user_id
             response = {
-                'message': message
+                'message': "Invalid token"
             }
             return make_response(jsonify(response)), 401
 

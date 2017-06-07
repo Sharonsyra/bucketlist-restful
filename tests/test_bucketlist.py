@@ -38,6 +38,15 @@ class BucketlistTestCase(unittest.TestCase):
         }
         return self.client().post('/api/v1.0/auth/login', data=user_data)
 
+    def test_access_token_blank(self):
+        """Test authorization header"""
+        self.register_user()
+        response = self.client().post(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + ""),
+            data=self.bucketlist)
+        self.assertEqual(response.status_code, 401)
+
     def test_bucketlist_creation(self):
         """Test that bucketlist is created"""
         self.register_user()
