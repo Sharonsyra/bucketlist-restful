@@ -11,6 +11,7 @@ manager = Manager(app)
 
 manager.add_command('db', MigrateCommand)
 
+
 @manager.command
 def test():
     """manager command to run unittests."""
@@ -20,17 +21,20 @@ def test():
         return 0
     return 1
 
+
 @manager.command
 def createdb():
     """ Creates database and its tables """
     db.create_all()
     db.session.commit()
 
+
 @manager.command
 def dropdb():
     """ Deletes database """
     if prompt_bool("Are you sure you want to delete?"):
         db.drop_all()
+
 
 if __name__ == '__main__':
     manager.run()

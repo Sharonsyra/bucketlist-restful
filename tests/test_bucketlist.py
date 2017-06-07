@@ -1,11 +1,16 @@
+import sys
 import unittest
-import os
 import json
+
+from os import path
 from app import create_app, db
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 
 class BucketlistTestCase(unittest.TestCase):
     """Bucketlist Test Case"""
+
     def setUp(self):
         self.app = create_app(config_name="testing")
         self.client = self.app.test_client
@@ -119,7 +124,7 @@ class BucketlistTestCase(unittest.TestCase):
                 "name": "Go sky-diving at Diani)"
             })
 
-        self.assertEqual(response_by_id.status_code, 200)
+        self.assertEqual(response_by_id.status_code, 201)
         results = self.client().get(
             '/api/v1.0/bucketlists/{}'.format(results['id']),
             headers=dict(Authorization="Bearer " + access_token))
@@ -175,17 +180,15 @@ class BucketlistTestCase(unittest.TestCase):
         response_by_id = self.client().get(
             '/api/v1.0/bucketlists/',
             headers=dict(Authorization="Bearer " + access_token)
-            )
+        )
         self.assertEqual(response_by_id.status_code, 200)
-        results = json.loads(response_by_id.data.decode())
-
         item_response = self.client().post(
             '/api/v1.0/bucketlists/1/items/',
             headers=dict(Authorization="Bearer " + access_token),
             data=self.item)
         self.assertEqual(item_response.status_code, 404)
-        self.assertIn('The bucketlist does not exist!', str(item_response.data))
-
+        self.assertIn('The bucketlist does not exist!',
+                      str(item_response.data))
 
     def test_bucketlist_item_creation_duplicates(self):
         """Test that bucketlist cannot have duplicate items"""
@@ -199,7 +202,7 @@ class BucketlistTestCase(unittest.TestCase):
             data=self.bucketlist)
         self.assertEqual(response_by_id.status_code, 201)
         results = json.loads(response_by_id.data.decode())
-        
+
         item_response = self.client().post(
             '/api/v1.0/bucketlists/{}/items/'.format(results['id']),
             headers=dict(Authorization="Bearer " + access_token),
@@ -224,7 +227,7 @@ class BucketlistTestCase(unittest.TestCase):
             data=self.bucketlist)
         self.assertEqual(response_by_id.status_code, 201)
         results = json.loads(response_by_id.data.decode())
-        
+
         item_response = self.client().post(
             '/api/v1.0/bucketlists/{}/items/'.format(results['id']),
             headers=dict(Authorization="Bearer " + access_token),
@@ -256,7 +259,8 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertEqual(item_response.status_code, 201)
         item_result = json.loads(item_response.data.decode())
         item_response = self.client().get(
-            '/api/v1.0/bucketlists/{}/items/{}'.format(results['id'], item_result['id']),
+            '/api/v1.0/bucketlists/{}/items/{}'.format(results['id'],
+                                                       item_result['id']),
             headers=dict(Authorization="Bearer " + access_token)
         )
         self.assertEqual(item_response.status_code, 200)
@@ -290,14 +294,16 @@ class BucketlistTestCase(unittest.TestCase):
         item_result = json.loads(item_response.data.decode())
 
         item_response = self.client().put(
-            '/api/v1.0/bucketlists/{}/items/{}'.format(results['id'], item_result['id']),
+            '/api/v1.0/bucketlists/{}/items/{}'.format(results['id'],
+                                                       item_result['id']),
             headers=dict(Authorization="Bearer " + access_token),
-            data={'name':'Buy a travel bag'})
+            data={'name': 'Buy a travel bag'})
         self.assertEqual(item_response.status_code, 200)
         self.assertIn('travel bag', str(item_response.data))
 
         results = self.client().get(
-            '/api/v1.0/bucketlists/{}/items/{}'.format(results['id'], item_result['id']),
+            '/api/v1.0/bucketlists/{}/items/{}'.format(results['id'],
+                                                       item_result['id']),
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(results.status_code, 200)
         self.assertIn('travel bag', str(results.data))
@@ -314,7 +320,7 @@ class BucketlistTestCase(unittest.TestCase):
             data=self.bucketlist)
         self.assertEqual(response_by_id.status_code, 201)
         results = json.loads(response_by_id.data.decode())
-        
+
         item_response = self.client().post(
             '/api/v1.0/bucketlists/{}/items/'.format(results['id']),
             headers=dict(Authorization="Bearer " + access_token),
@@ -329,14 +335,13 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertEqual(item_response.status_code, 200)
 
         result = self.client().get(
-            '/api/v1.0/bucketlists/{}/items/{}'.format(results['id'], item_result['id']),
+            '/api/v1.0/bucketlists/{}/items/{}'.format(results['id'],
+                                                       item_result['id']),
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 404)
 
-    def test_pagination():
-        pass
-
-    def test_search():
+    def test_pagination_default_limit(self):
+        """Test that pagination returns the limit specified"""
         self.register_user()
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
@@ -346,12 +351,63 @@ class BucketlistTestCase(unittest.TestCase):
             headers=dict(Authorization="Bearer " + access_token),
             data=self.bucketlist)
         self.assertEqual(response.status_code, 201)
-        response = self.client().get(
+        self.assertIn('Go bungee', str(response.data))
+
+        result = self.client().get(
+            '/api/v1.0/bucketlists?page=1',
+            headers=dict(Authorization="Bearer " + access_token))
+        self.assertEqual(result.status_code, 200)
+
+    def test_pagination_set_limit(self):
+        """Test that pagination returns the limit specified"""
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        response = self.client().post(
             '/api/v1.0/bucketlists/',
             headers=dict(Authorization="Bearer " + access_token),
-        )
-        self.assertEqual(response.status_code, 200)
+            data=self.bucketlist)
+        self.assertEqual(response.status_code, 201)
         self.assertIn('Go bungee', str(response.data))
+
+        result = self.client().get(
+            '/api/v1.0/bucketlists?page=1',
+            headers=dict(Authorization="Bearer " + access_token))
+        self.assertEqual(result.status_code, 200)
+
+    def test_search_name(self):
+        """Test that search for a bucketlist"""
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        response_by_id = self.client().post(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.bucketlist)
+        self.assertEqual(response_by_id.status_code, 201)
+        result = self.client().get(
+            '/api/v1.0/bucketlists?q=bungee',
+            headers=dict(Authorization="Bearer " + access_token))
+        self.assertEqual(result.status_code, 200)
+
+    def test_search_non_existent(self):
+        """Test that search recognizes a non existent search"""
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        response_by_id = self.client().post(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data=self.bucketlist)
+        self.assertEqual(response_by_id.status_code, 201)
+        result = self.client().get(
+            '/api/v1.0/bucketlists?q=computer',
+            headers=dict(Authorization="Bearer " + access_token))
+        self.assertEqual(result.status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()
