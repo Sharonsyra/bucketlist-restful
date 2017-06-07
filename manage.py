@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from flask_script import Manager
+from flask_script import Manager, prompt_bool
 from flask_migrate import Migrate, MigrateCommand
 from app import db, create_app
 

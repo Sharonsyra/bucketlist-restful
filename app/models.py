@@ -1,3 +1,4 @@
+import re
 from app import db
 from flask_bcrypt import Bcrypt
 from flask import current_app
@@ -35,7 +36,7 @@ class User(db.Model):
 
         try:
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=5),
+                'exp': datetime.utcnow() + timedelta(minutes=20),
                 'iat': datetime.utcnow(),
                 'sub': user_id
             }
