@@ -1,9 +1,9 @@
-import re
-from app import db
 from flask_bcrypt import Bcrypt
 from flask import current_app
 import jwt
 from datetime import datetime, timedelta
+
+from app import db
 
 
 class User(db.Model):
@@ -36,7 +36,7 @@ class User(db.Model):
 
         try:
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=20),
+                'exp': datetime.utcnow() + timedelta(minutes=120),
                 'iat': datetime.utcnow(),
                 'sub': user_id
             }
@@ -68,7 +68,7 @@ class Bucketlist(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    done = db.Column(db.Boolean, default=False) 
+    done = db.Column(db.Boolean, default=False)
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(
         db.DateTime, default=db.func.current_timestamp(),
@@ -101,12 +101,13 @@ class Bucketlist(db.Model):
         """Bucketlist object representation."""
         return "<Bucketlist {}>".format(self.title)
 
+
 class Item(db.Model):
     """Item table class"""
     __tablename__ = 'item'
 
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(50), nullable = False)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
     done = db.Column(db.Boolean, default=False)
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(
