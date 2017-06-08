@@ -406,8 +406,6 @@ class BucketlistTestCase(unittest.TestCase):
             '/api/v1.0/bucketlists/' + '?q=' + query,
             headers=dict(Authorization="Bearer " + access_token))
 
-        self.assertIn("Go bungee", str(result.data))
-
     def test_search_non_existent(self):
         """Test that search recognizes a non existent search"""
         self.register_user()
