@@ -22,12 +22,6 @@ def create_app(config_name):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
 
-        if not auth_header:
-            response = {
-                "message": "Unauthorised Access"
-            }
-            return make_response(jsonify(response)), 401
-
         if access_token:
             user_id = User.decode_token(access_token)
             if isinstance(user_id, int):
@@ -36,7 +30,7 @@ def create_app(config_name):
                         response = {
                             "message": "Name missing!"
                         }
-                        return make_response(jsonify(response))
+                        return make_response(jsonify(response)), 200
                     bucketlist = Bucketlist.query.filter_by(
                         name=request.data['name']).first()
                     if not bucketlist:
@@ -179,12 +173,6 @@ def create_app(config_name):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
 
-        if not auth_header:
-            response = {
-                "message": "Unauthorised Access"
-            }
-            return make_response(jsonify(response)), 401
-
         if access_token:
             user_id = User.decode_token(access_token)
             if isinstance(user_id, int):
@@ -264,12 +252,6 @@ def create_app(config_name):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
 
-        if not auth_header:
-            response = {
-                "message": "Unauthorised Access"
-            }
-            return make_response(jsonify(response)), 401
-
         if access_token:
             user_id = User.decode_token(access_token)
             if isinstance(user_id, int):
@@ -342,12 +324,6 @@ def create_app(config_name):
     def items_manipulation(id, item_id):
         auth_header = request.headers.get('Authorization')
         access_token = auth_header.split(" ")[1]
-
-        if not auth_header:
-            response = {
-                "message": "Unauthorised Access"
-            }
-            return make_response(jsonify(response)), 401
 
         if access_token:
             user_id = User.decode_token(access_token)

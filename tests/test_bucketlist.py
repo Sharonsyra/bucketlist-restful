@@ -38,15 +38,6 @@ class BucketlistTestCase(unittest.TestCase):
         }
         return self.client().post('/api/v1.0/auth/login', data=user_data)
 
-    def test_access_token_blank(self):
-        """Test authorization header"""
-        self.register_user()
-        response = self.client().post(
-            '/api/v1.0/bucketlists/',
-            headers=dict(Authorization="Bearer " + ""),
-            data=self.bucketlist)
-        self.assertEqual(response.status_code, 401)
-
     def test_bucketlist_creation(self):
         """Test that bucketlist is created"""
         self.register_user()
@@ -59,6 +50,32 @@ class BucketlistTestCase(unittest.TestCase):
             data=self.bucketlist)
         self.assertEqual(response.status_code, 201)
         self.assertIn('Go bungee', str(response.data))
+
+    def test_bucketlist_creation_no_data(self):
+        """Test that bucketlist no data"""
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        response = self.client().post(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data={})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Name missing!', str(response.data))
+
+    def test_bucketlist_creation_no_value(self):
+        """Test that bucketlist no key value"""
+        self.register_user()
+        result = self.login_user()
+        access_token = json.loads(result.data.decode())['access_token']
+
+        response = self.client().post(
+            '/api/v1.0/bucketlists/',
+            headers=dict(Authorization="Bearer " + access_token),
+            data={"name": ""})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Please input name!', str(response.data))
 
     def test_bucketlist_creation_duplicates(self):
         """Test user cannot create duplicate bucketlists"""
@@ -355,17 +372,11 @@ class BucketlistTestCase(unittest.TestCase):
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
 
-        response = self.client().post(
-            '/api/v1.0/bucketlists/',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.bucketlist)
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('Go bungee', str(response.data))
-
         result = self.client().get(
-            '/api/v1.0/bucketlists?page=1',
+            '/api/v1.0/bucketlists/' + '?limit=',
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 200)
+        self.assertIn("Nothing To See Here", str(result.data))
 
     def test_pagination_set_limit(self):
         """Test that pagination returns the limit specified"""
@@ -373,17 +384,11 @@ class BucketlistTestCase(unittest.TestCase):
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
 
-        response = self.client().post(
-            '/api/v1.0/bucketlists/',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.bucketlist)
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('Go bungee', str(response.data))
-
         result = self.client().get(
-            '/api/v1.0/bucketlists?page=1',
+            '/api/v1.0/bucketlists/' + '?limit=',
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 200)
+        self.assertIn("Nothing To See Here", str(result.data))
 
     def test_search_name(self):
         """Test that search for a bucketlist"""
@@ -391,15 +396,17 @@ class BucketlistTestCase(unittest.TestCase):
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
 
-        response_by_id = self.client().post(
+        result = self.client().post(
             '/api/v1.0/bucketlists/',
             headers=dict(Authorization="Bearer " + access_token),
             data=self.bucketlist)
-        self.assertEqual(response_by_id.status_code, 201)
+        query = self.bucketlist["name"]
+
         result = self.client().get(
-            '/api/v1.0/bucketlists?q=bungee',
+            '/api/v1.0/bucketlists/' + '?q=' + query,
             headers=dict(Authorization="Bearer " + access_token))
-        self.assertEqual(result.status_code, 200)
+
+        self.assertIn("Go bungee", str(result.data))
 
     def test_search_non_existent(self):
         """Test that search recognizes a non existent search"""
@@ -407,15 +414,14 @@ class BucketlistTestCase(unittest.TestCase):
         result = self.login_user()
         access_token = json.loads(result.data.decode())['access_token']
 
-        response_by_id = self.client().post(
-            '/api/v1.0/bucketlists/',
-            headers=dict(Authorization="Bearer " + access_token),
-            data=self.bucketlist)
-        self.assertEqual(response_by_id.status_code, 201)
+        q_data = {"name": "name"}
+
+        query = q_data["name"]
+
         result = self.client().get(
-            '/api/v1.0/bucketlists?q=computer',
+            '/api/v1.0/bucketlists/' + '?q=' + query,
             headers=dict(Authorization="Bearer " + access_token))
-        self.assertEqual(result.status_code, 404)
+        self.assertIn("Bucketlist does not exist!", str(result.data))
 
 
 if __name__ == "__main__":

@@ -1,11 +1,12 @@
 [run]
-branch = True
+branch = False
 include = app/*
 
 [report]
 omit =
     */python?.?/*
     */site-packages/nose/*
+    *models.py*
 
 
 # Regexes for lines to exclude from consideration
