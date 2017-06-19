@@ -3,7 +3,7 @@ import unittest
 
 from flask_script import Manager, prompt_bool
 from flask_migrate import Migrate, MigrateCommand
-from app import db, create_app
+from app.bucketlist.views import db, create_app
 
 app = create_app(config_name=os.getenv('APP_SETTINGS'))
 migrate = Migrate(app, db)

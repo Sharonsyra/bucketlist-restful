@@ -3,7 +3,7 @@ import unittest
 import json
 
 from os import path
-from app import create_app, db
+from app.bucketlist.views import create_app, db
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
@@ -376,7 +376,7 @@ class BucketlistTestCase(unittest.TestCase):
             '/api/v1.0/bucketlists/' + '?limit=',
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 200)
-        self.assertIn("Nothing To See Here", str(result.data))
+        self.assertIn("previous_page", str(result.data))
 
     def test_pagination_set_limit(self):
         """Test that pagination returns the limit specified"""
@@ -388,7 +388,7 @@ class BucketlistTestCase(unittest.TestCase):
             '/api/v1.0/bucketlists/' + '?limit=',
             headers=dict(Authorization="Bearer " + access_token))
         self.assertEqual(result.status_code, 200)
-        self.assertIn("Nothing To See Here", str(result.data))
+        self.assertIn("next_page", str(result.data))
 
     def test_search_name(self):
         """Test that search for a bucketlist"""

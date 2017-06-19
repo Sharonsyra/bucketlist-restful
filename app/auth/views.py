@@ -16,24 +16,24 @@ class RegistrationView(MethodView):
         match=re.search(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9]+\.[a-zA-Z0-9.]*\.*[com|org|edu]{3}$)", 
                         post_data['email'])
 
-        if post_data['email'] == "":
+        if not post_data['email']:
             response = jsonify({
                 "message": "Please enter an email"
             })
-            return make_response(jsonify(response)), 400
+            return make_response(response), 400
 
         if not match:
-            response = {
+            response = jsonify({
                 "message": "Use the correct email format"
-            }
-            return make_response(jsonify(response)), 400
+            })
+            return make_response(response), 400
 
         if len(post_data['password']) < 6:
-            response = {
+            response = jsonify({
                 "message":
                 "The length of the password should be at least six characters"
-            }
-            return make_response(jsonify(response)), 411
+            })
+            return make_response(response), 411
 
         if not user:
             try:

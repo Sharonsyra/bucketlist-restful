@@ -3,7 +3,7 @@ from flask import current_app
 import jwt
 from datetime import datetime, timedelta
 
-from app import db
+from app.bucketlist.views import db
 
 
 class User(db.Model):
@@ -36,7 +36,7 @@ class User(db.Model):
 
         try:
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=120),
+                'exp': datetime.utcnow() + timedelta(minutes=240),
                 'iat': datetime.utcnow(),
                 'sub': user_id
             }

@@ -3,7 +3,7 @@ import unittest
 import json
 
 from os import path
-from app import create_app, db
+from app.bucketlist.views import create_app, db
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
