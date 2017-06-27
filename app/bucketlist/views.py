@@ -37,7 +37,7 @@ def create_app(config_name):
                     response = {
                         "message": "Name missing!"
                     }
-                    return make_response(jsonify(response)), 200
+                    return make_response(jsonify(response)), 400
                 bucketlist = Bucketlist.query.filter_by(
                     name=request.data['name']).filter_by(created_by=user_id).first()
                 if not bucketlist:

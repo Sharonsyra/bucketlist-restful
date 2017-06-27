@@ -33,7 +33,7 @@ class RegistrationView(MethodView):
                 "message":
                 "The length of the password should be at least six characters"
             })
-            return make_response(response), 411
+            return make_response(response), 400
 
         if not user:
             try:
