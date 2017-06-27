@@ -38,25 +38,25 @@
 
   * **Code:** 400 BAD REQUEST <br />
 
-  * **Content:** {'message': 'Please enter an email'}
+  * **Content:** `{'message': 'Please enter an email'}`
 
   OR
 
-  * **Content:** {'message': 'Use the correct email format'}
+  * **Content:** `{'message': 'Use the correct email format'}`
 
   OR
 
-  * **Content:** {'message': 'User already exists. Login.'}
+  * **Content:** `{'message': 'User already exists. Login.'}`
 
   OR
 
-  * **Content:** {'message': 'The length of the password should be at least six characters'}
+  * **Content:** `{'message': 'The length of the password should be at least six characters'}`
 
 
 
   * **Code:** 409 Conflict <br />
 
-  * **Content:** {'message': 'User already exists. Login.'}
+  * **Content:** `{'message': 'User already exists. Login.'}`
 
 * **Sample Call:**
 
@@ -103,7 +103,7 @@
 
   OR
 
-  * **Content:** {'message': 'Invalid email or password, Please try again.'}
+  * **Content:** `{'message': 'Invalid email or password, Please try again.'}`
 
 * **Sample Call:**
 
@@ -182,7 +182,7 @@
 
   * **Code:** 401 UNAUTHORIZED <br />
 
-  * **Content:** {"message": "Invalid Token"}
+  * **Content:** `{"message": "Invalid Token"}`
 
 * **Sample Call:**
 
@@ -314,19 +314,19 @@
 
   * **Code:** 409 Conflict <br />
 
-  * **Content:** {"message": "Bucketlist name already exists!"}
+  * **Content:** `{"message": "Bucketlist name already exists!"}`
 
   OR
 
   * **Code:** 400 Bad Request <br />
 
-  * **Content:** {"message": "Name missing!"}
+  * **Content:** `{"message": "Name missing!"}`
 
   OR
 
   * **Code:** 400 Bad Request <br />
 
-  * **Content:** {"message": "Please input name!"}
+  * **Content:** `{"message": "Please input name!"}`
 
   
 
