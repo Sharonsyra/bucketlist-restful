@@ -230,7 +230,6 @@
   * **Code:** 200 <br />
     **Content:** <br />
     `{`<br />
-    &nbsp;&nbsp;` "bucketlist": {`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"created_by": 2,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_created": "Thu, 15 Jun 2017 07:36:33 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_modified": "Thu, 15 Jun 2017 07:36:33 GMT",`<br />
@@ -245,7 +244,6 @@
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`  "name": "gff"`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`}`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`]`<br />
-    &nbsp;&nbsp;`}`<br />
     `}`<br />
 
 
@@ -300,14 +298,12 @@
   * **Code:** 200 <br />
     **Content:** <br />
     `{`<br />
-    &nbsp;&nbsp;` "bucketlist": {`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"created_by": 2,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_created": "Tue, 27 Jun 2017 12:19:57 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_modified": "Tue, 27 Jun 2017 12:19:57 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"id": 20,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"items": [],`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"name": "head phones"`<br />
-    &nbsp;&nbsp;` }`<br />
     `}`<br />
 
 * **Error Response:**
@@ -375,14 +371,12 @@
   * **Code:** 201 <br />
   **Content:** <br />
     `{`<br />
-    &nbsp;&nbsp;` "bucketlist": {`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"created_by": 2,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_created": "Tue, 27 Jun 2017 12:19:57 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_modified": "Tue, 27 Jun 2017 12:19:57 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"id": 20,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"items": [],`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"name": "ear phones"`<br />
-    &nbsp;&nbsp;` }`<br />
     `}`<br />
 
 * **Error Response:**
@@ -490,14 +484,12 @@
   * **Code:** 200 <br />
     **Content:** <br />
     `{`<br />
-    &nbsp;&nbsp;` "item": {`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"bucketlist_id": 2,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_created": "Sun, 05 Mar 2017 10:14:13 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_modified": "Sun, 05 Mar 2017 10:14:13 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"done": false,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"id": 5,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"name": "pan cake"`<br />
-    &nbsp;&nbsp;` }`<br />
     `}`<br />
 
 * **Error Response:**
@@ -554,13 +546,11 @@
   * **Code:** 200 <br />
     **Content:** <br />
     `{`<br />
-    &nbsp;&nbsp;` "item": {`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_created": "Sun, 05 Mar 2017 10:14:13 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"date_modified": "Sun, 05 Mar 2017 10:17:37 GMT",`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"done": false,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"id": 5,`<br />
     &nbsp;&nbsp;&nbsp;&nbsp;`"name": "cup cake"`<br />
-    &nbsp;&nbsp;` }`<br />
     `}`<br />
 
 * **Error Response:**
