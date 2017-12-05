@@ -28,7 +28,7 @@ class StagingConfig(Config):
 
 class ProductionConfig(Config):
     """Production Configurations inherited from Config."""
-    DEBUG = False
+    DEBUG = True
     TESTING = False
 
 
