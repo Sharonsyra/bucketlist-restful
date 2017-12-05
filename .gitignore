@@ -4,3 +4,4 @@ __pycache__
 *.pyc
 cover
 .vscode/
+migrations/
