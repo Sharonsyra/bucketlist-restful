@@ -30,6 +30,9 @@ class User(db.Model):
         """Register and save user"""
         db.session.add(self)
         db.session.commit()
+        admin = User('admin@example.com', 'administrator')
+        db.session.add(admin)
+        db.session.commit()
 
     def generate_token(self, user_id):
         """Generate Authorization header token"""
@@ -64,6 +67,7 @@ class User(db.Model):
 
 class Bucketlist(db.Model):
     """Bucketlist table class"""
+
     __tablename__ = 'bucketlist'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -104,6 +108,7 @@ class Bucketlist(db.Model):
 
 class Item(db.Model):
     """Item table class"""
+    
     __tablename__ = 'item'
 
     id = db.Column(db.Integer, primary_key=True)
